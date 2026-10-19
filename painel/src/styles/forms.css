@@ -1,0 +1,88 @@
+/* Controles do formulario, desenhados a partir dos prototipos. */
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid #e8ecf4;
+  border-radius: 8px;
+  color: #0f1b4c;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: #2f54eb;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #8c97b2;
+}
+
+.input--error,
+.select--error,
+.textarea--error {
+  border-color: #f5222d;
+}
+
+.input:disabled,
+.select:disabled,
+.textarea:disabled {
+  background: #f7f9fc;
+  color: #45527a;
+}
+
+.textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.select {
+  appearance: none;
+  cursor: pointer;
+  /* Espaco para a seta desenhada por .select-wrapper::after */
+  padding-right: 38px;
+}
+
+.select:invalid {
+  color: #8c97b2;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #2f54eb;
+  border-bottom: 2px solid #2f54eb;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon__button {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  line-height: 0;
+}

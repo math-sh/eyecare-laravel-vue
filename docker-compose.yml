@@ -1,0 +1,66 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: eyecare_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: eyecare
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-uroot', '-proot']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: ./api
+    container_name: eyecare_api
+    working_dir: /var/www/html
+    volumes:
+      - ./api:/var/www/html
+      # vendor/ e bootstrap/cache ficam em volume do Docker, fora do bind mount
+      # do Windows: sao milhares de arquivos lidos a cada requisicao e no
+      # filesystem do host isso custa ~5s por request.
+      - api_vendor:/var/www/html/vendor
+      - api_cache:/var/www/html/bootstrap/cache
+    ports:
+      - '8000:8000'
+    environment:
+      # O servidor embutido do PHP e single-thread por padrao; com workers
+      # ele aguenta requisicoes paralelas do painel.
+      PHP_CLI_SERVER_WORKERS: '4'
+      # As credenciais do banco NAO vem daqui, e sim do api/.env.
+      # Variavel de ambiente do container tem precedencia sobre tudo —
+      # inclusive sobre o phpunit.xml — e faria a suite de testes rodar no
+      # MySQL de desenvolvimento em vez do SQLite em memoria, apagando os
+      # dados a cada `php artisan test` por causa do RefreshDatabase.
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  painel:
+    image: node:22-alpine
+    container_name: eyecare_painel
+    working_dir: /app
+    volumes:
+      - ./painel:/app
+      # node_modules em volume proprio: o binario do esbuild e especifico de
+      # plataforma, entao o instalado no host nao serve dentro do container.
+      - painel_node_modules:/app/node_modules
+    ports:
+      - '5173:5173'
+    environment:
+      # O axios roda no NAVEGADOR, entao a URL precisa ser alcancavel do host.
+      VITE_API_URL: http://localhost:8000/api
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - api
+
+volumes:
+  mysql_data:
+  api_vendor:
+  api_cache:
+  painel_node_modules:

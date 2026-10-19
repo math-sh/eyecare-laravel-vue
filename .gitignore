@@ -1,0 +1,8 @@
+/api/vendor
+/api/.env
+/api/storage/*.key
+/painel/node_modules
+/painel/dist
+.DS_Store
+nul
+/painel/.env
