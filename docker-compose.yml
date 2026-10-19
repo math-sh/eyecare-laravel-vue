@@ -55,7 +55,16 @@ services:
     environment:
       # O axios roda no NAVEGADOR, entao a URL precisa ser alcancavel do host.
       VITE_API_URL: http://localhost:8000/api
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+      # Desliga o Husky no container: so a pasta painel/ e montada aqui, sem o
+      # .git (que fica na raiz do repo, no host). Sem isso, o script "prepare"
+      # do npm install falharia e o "npm run dev" nunca rodaria. O Husky
+      # continua ativo no host, onde os commits de fato acontecem.
+      HUSKY: '0'
+    # Rede de seguranca: se o watcher do Vite cair com um EIO transitorio do
+    # bind mount do Windows, o laco reergue o dev server em vez de deixar o
+    # container morto (Exited 1). Com o polling calmo do vite.config isso
+    # deve ser raro, mas o laco garante que o painel nao fique fora do ar.
+    command: sh -c "npm install && until npm run dev -- --host 0.0.0.0; do echo '[painel] vite caiu, reiniciando em 1s...'; sleep 1; done"
     depends_on:
       - api
 
